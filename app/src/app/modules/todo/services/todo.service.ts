@@ -19,15 +19,12 @@ export class TodoService {
     limit?: number,
     query?: ITodoListQuery
   ): Observable<any> {
-    const params = new HttpParams();
+    let params = `?page=${page ? page + 1 : 1}&limit=${limit}`;
     const { description, priority } = query || {};
 
-    params.set('page', page ? page + 1 : 1);
-    params.set('limit', limit || 10);
+    if (description) params += `&description=${description}`;
+    if (priority) params += `&priority=${priority}`;
 
-    if (description) params.set('description', encodeURI(description));
-    if (priority) params.set('priority', priority);
-
-    return this._http.get('/todo', { params });
+    return this._http.get('/todo' + params);
   }
 }
