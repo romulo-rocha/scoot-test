@@ -5,4 +5,6 @@ export default <any>{
   database: '.db/sql',
   synchronize: true,
   entities: [Todo],
+  seeds: ['src/core/database/seeds/*.seed.ts'],
+  factories: ['src/core/database/factories/*.factory.ts'],
 };
