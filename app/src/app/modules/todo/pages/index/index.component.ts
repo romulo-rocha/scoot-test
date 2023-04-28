@@ -1,6 +1,7 @@
 import { Component, AfterViewInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
-import { merge, Observable, of as observableOf } from 'rxjs';
+import { FormGroup, FormControl } from '@angular/forms';
+import { Observable, merge, of as observableOf } from 'rxjs';
 import { catchError, map, startWith, switchMap } from 'rxjs/operators';
 
 import { TodoService } from '../../services/todo.service';
@@ -13,6 +14,11 @@ import { TodoService } from '../../services/todo.service';
 export class IndexComponent implements AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
+  filterForm = new FormGroup({
+    description: new FormControl(''),
+    priority: new FormControl(''),
+  });
+
   displayedColumns: string[] = ['description', 'priority', 'dueAt'];
   data: any[] = [];
 
@@ -23,13 +29,18 @@ export class IndexComponent implements AfterViewInit {
   constructor(private todoService: TodoService) {}
 
   ngAfterViewInit(): void {
-    merge(this.paginator.page)
+    this.filterForm.valueChanges.subscribe(() => this.paginator.firstPage());
+    merge(this.filterForm.valueChanges, this.paginator.page)
       .pipe(
         startWith({}),
         switchMap(() => {
           this.isLoadingResults = true;
           return this.todoService
-            .getList(this.paginator.pageIndex, this.paginator.pageSize)
+            .getList(
+              this.paginator.pageIndex,
+              this.paginator.pageSize,
+              this.filterForm.getRawValue() as any
+            )
             .pipe(catchError(() => observableOf(null)));
         }),
         map((data) => {
